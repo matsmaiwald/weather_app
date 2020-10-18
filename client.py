@@ -50,3 +50,7 @@ def get_weather_data() -> pd.DataFrame:
     weather_data_raw = _get_response_dict(url=url)
     df = _process_weather_data(weather_data=weather_data_raw)
     return df
+
+
+if __name__ == "__main__":
+    print(get_weather_data())
