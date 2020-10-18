@@ -1,4 +1,6 @@
 import dash
+import io
+import base64
 import dash_core_components as dcc
 from plotly.tools import mpl_to_plotly
 import dash_html_components as html
@@ -25,18 +27,23 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
 @app.callback(
-    Output("example-graph", "figure"), [Input("interval-component", "n_intervals")]
+    Output("example-graph", "src"), [Input("interval-component", "n_intervals")]
 )
 def make_data(n):
     plt.close("all")
     df = get_weather_data()
     # fig = px.line(df, x="timestamp", y="temp")
     fig = plot_weather(x=df["timestamp"], y=df["temp"], z=df["weather"], images=images)
-    return mpl_to_plotly(fig)
+    buf = io.BytesIO()  # in-memory files
+    plt.savefig(buf, format="png")  # save to the above file object
+    data = base64.b64encode(buf.getbuffer()).decode("utf8")  # encode to html elements
+    plt.close()
+    return "data:image/png;base64,{}".format(data)
+    # return mpl_to_plotly(fig)
 
 
 def plot_weather(x, y, z, images, ax=None):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 7))
     ax.plot(x, y)
 
     ax = ax or plt.gca()
@@ -60,7 +67,7 @@ app.layout = html.Div(
         Dash: A web application framework for Python.
     """
         ),
-        dcc.Graph(id="example-graph"),
+        html.Img(id="example-graph"),
         dcc.Interval(id="interval-component", interval=10 * 1000, n_intervals=0),
     ]
 )
