@@ -2,13 +2,13 @@ import dash
 import io
 import base64
 import dash_core_components as dcc
-from plotly.tools import mpl_to_plotly
 import dash_html_components as html
 from dash.dependencies import Output, Input
-import plotly.express as px
 from client import get_weather_data
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import matplotlib.dates as mdates
+
 
 path_rain = "/home/mats/Downloads/iconfinder_Weather_Weather_Forecast_Heavy_Rain_Cloud_Climate_3859135.png"
 path_sun = (
@@ -44,17 +44,26 @@ def make_data(n):
 
 def plot_weather(x, y, z, images, ax=None):
     fig, ax = plt.subplots(figsize=(12, 7))
+    # Plot temperature
     ax.plot(x, y)
 
+    # Plot symbol
     ax = ax or plt.gca()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
+
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
     for xi, yi, zi in zip(x, y, z):
-        im = OffsetImage(images[zi], zoom=5 / ax.figure.dpi)
-        im.image.axes = ax
+        try:
+            im = OffsetImage(images[zi], zoom=5 / ax.figure.dpi)
+            im.image.axes = ax
 
-        ab = AnnotationBbox(im, (xi, yi), frameon=False, pad=0.0,)
+            ab = AnnotationBbox(im, (xi, yi), frameon=False, pad=0.0,)
 
-        ax.add_artist(ab)
+            ax.add_artist(ab)
+        except KeyError:
+            pass
 
     return fig
 
