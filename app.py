@@ -10,11 +10,13 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.dates as mdates
 
 
-path_rain = "/home/mats/Downloads/iconfinder_Weather_Weather_Forecast_Heavy_Rain_Cloud_Climate_3859135.png"
-path_sun = (
-    "/home/mats/Downloads/iconfinder_Weather_Weather_Forecast_Hot_Sun_Day_3859136.png"
+path_rain = (
+    "./images/iconfinder_Weather_Weather_Forecast_Heavy_Rain_Cloud_Climate_3859135.png"
 )
-path_clouds = "/home/mats/Downloads/iconfinder_Weather_Weather_Forecast_Cloudy_Season_Cloud_3859132.png"
+path_sun = "./images/iconfinder_Weather_Weather_Forecast_Hot_Sun_Day_3859136.png"
+path_clouds = (
+    "./images/iconfinder_Weather_Weather_Forecast_Cloudy_Season_Cloud_3859132.png"
+)
 images = {
     "Rain": plt.imread(path_rain),
     "Sun": plt.imread(path_sun),
@@ -22,6 +24,10 @@ images = {
 }
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
+
+font_options = {"font.size": 16}
+
+plt.rcParams.update(font_options)
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -45,7 +51,7 @@ def make_data(n):
 def plot_weather(x, y, z, images, ax=None):
     fig, ax = plt.subplots(figsize=(12, 7))
     # Plot temperature
-    ax.plot(x, y)
+    ax.plot(x, y, linewidth=5)
 
     # Plot symbol
     ax = ax or plt.gca()
