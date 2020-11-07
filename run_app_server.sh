@@ -1,4 +1,4 @@
 #!/bin/bash
 
-source ~/venvs/weather_app/bin/activate
+source ./venv/bin/activate
 python3 app.py
