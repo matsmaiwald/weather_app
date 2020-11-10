@@ -1,4 +1,4 @@
 #!/bin/bash
 ./run_app_server.sh &
 sleep 10
-./open_browser.sh
+./open_browser.sh &

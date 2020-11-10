@@ -1,2 +1,3 @@
 #!/bin/bash
-chromium-browser --kiosk http://127.0.0.1:8050/
+export DISPLAY=:0
+chromium-browser --start-fullscreen http://127.0.0.1:8050/

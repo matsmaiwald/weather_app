@@ -82,9 +82,10 @@ app.layout = html.Div(
         Dash: A web application framework for Python.
     """
         ),
-        html.Img(id="example-graph"),
-        dcc.Interval(id="interval-component", interval=10 * 1000, n_intervals=0),
-    ]
+        html.Img(id="example-graph",
+        style={'height':'80%', 'width':'80%'}),
+        dcc.Interval(id="interval-component", interval=5 * 60 * 1000, n_intervals=0),
+        ]
 )
 
 if __name__ == "__main__":
