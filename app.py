@@ -84,7 +84,7 @@ app.layout = html.Div(
         ),
         html.Img(id="example-graph",
         style={'height':'80%', 'width':'80%'}),
-        dcc.Interval(id="interval-component", interval=5 * 60 * 1000, n_intervals=0),
+        dcc.Interval(id="interval-component", interval=0.5 * 60 * 1000, n_intervals=0),
         ]
 )
 
