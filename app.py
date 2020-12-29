@@ -35,7 +35,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 @app.callback(
     Output("example-graph", "src"), [Input("interval-component", "n_intervals")]
 )
-def make_data(n):
+def run_app(n):
     plt.close("all")
     df = get_weather_data()
     # fig = px.line(df, x="timestamp", y="temp")
@@ -68,26 +68,20 @@ def plot_weather(x, y, z, images, ax=None):
             ab = AnnotationBbox(im, (xi, yi), frameon=False, pad=0.0,)
 
             ax.add_artist(ab)
-        except KeyError:
-            pass
+        except KeyError as e:
+            print(f"No image found for weather: {e}")
 
     return fig
 
 
 app.layout = html.Div(
     children=[
-        html.H1(children="Hello Dash"),
-        html.Div(
-            children="""
-        Dash: A web application framework for Python.
-    """
-        ),
-        html.Img(id="example-graph",
-        style={'height':'80%', 'width':'80%'}),
+        html.H1(children="Weather Forecast"),
+        html.Div(children="""Hourly temperature and weather forecast."""),
+        html.Img(id="example-graph", style={"height": "80%", "width": "80%"}),
         dcc.Interval(id="interval-component", interval=0.5 * 60 * 1000, n_intervals=0),
-        ]
+    ]
 )
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
