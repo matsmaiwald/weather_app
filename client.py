@@ -1,6 +1,8 @@
 import requests
 import json
 import pandas as pd
+import io
+import urllib.request
 
 import yaml
 
@@ -32,15 +34,36 @@ def _process_weather_data(weather_data: dict) -> pd.DataFrame:
     fcs["hourly"] = dict()
     timestamps = []
     temperatures = []
-    weather = []
+    icon_codes = []
     for hourly_forecast in weather_data.get("hourly"):
         timestamps.append(pd.to_datetime(hourly_forecast.get("dt"), unit="s"))
         temperatures.append(hourly_forecast.get("temp"))
-        weather.append(hourly_forecast.get("weather")[0].get("main"))
+        icon_codes.append(hourly_forecast.get("weather")[0].get("icon"))
+
     df = pd.DataFrame(
-        {"timestamp": timestamps, "temp": temperatures, "weather": weather}
+        {"timestamp": timestamps, "temp": temperatures, "icon_code": icon_codes}
     )
+    df["icon_code"].apply(_download_icon_from_code)
     return df
+
+
+def _download_image_from_url(url: str, download_name: str, download_dir: str = "./"):
+
+    img_data = requests.get(url).content
+    with open(f"{download_dir}{download_name}.png", "wb") as f:
+        f.write(img_data)
+
+
+def _get_icon_url(icon_code: str):
+    url = f"https://openweathermap.org/img/wn/{icon_code}@2x.png"
+    return url
+
+
+def _download_icon_from_code(icon_code: str):
+    url = _get_icon_url(icon_code=icon_code)
+    _download_image_from_url(
+        url, download_name=icon_code, download_dir="./images/",
+    )
 
 
 def get_weather_data() -> pd.DataFrame:
@@ -53,4 +76,6 @@ def get_weather_data() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    print(get_weather_data())
+    # df = get_weather_data()
+    # print(df)
+    _download_icon_from_code(icon_code="10d")

@@ -9,26 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.dates as mdates
 import pandas as pd
-from typing import List
 
-
-path_rain = (
-    "./images/iconfinder_Weather_Weather_Forecast_Heavy_Rain_Cloud_Climate_3859135.png"
-)
-path_sun = "./images/iconfinder_Weather_Weather_Forecast_Hot_Sun_Day_3859136.png"
-path_clouds = (
-    "./images/iconfinder_Weather_Weather_Forecast_Cloudy_Season_Cloud_3859132.png"
-)
-path_snow = "./images/snow.png"
-path_semi_cloudy = "./images/cloudy.png"
-
-images = {
-    "Rain": plt.imread(path_rain),
-    "Sun": plt.imread(path_sun),
-    "Clouds": plt.imread(path_clouds),
-    "Snow": plt.imread(path_snow),
-    "Clear": plt.imread(path_semi_cloudy),
-}
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
@@ -46,7 +27,7 @@ def run_app(n):
     plt.close("all")
     df = get_weather_data()
     plot_graph_plus_symbols(
-        x=df["timestamp"], y=df["temp"], symbol_keys=df["weather"], images=images
+        x=df["timestamp"], y=df["temp"], symbol_keys=df["icon_code"],
     )
     buf = io.BytesIO()  # in-memory files
     plt.savefig(buf, format="png")  # save to the above file object
@@ -56,11 +37,12 @@ def run_app(n):
 
 
 def plot_graph_plus_symbols(
-    x: pd.Series, y: pd.Series, symbol_keys: pd.Series, images: List, ax=None
+    x: pd.Series, y: pd.Series, symbol_keys: pd.Series,
 ):
     fig, ax = plt.subplots(figsize=(12, 7))
     # Plot temperature
     ax.plot(x, y, linewidth=5)
+    ax.set_facecolor("lightblue")
 
     # Plot symbol
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
@@ -70,7 +52,7 @@ def plot_graph_plus_symbols(
 
     for xi, yi, zi in zip(x, y, symbol_keys):
         try:
-            im = OffsetImage(images[zi], zoom=5 / ax.figure.dpi)
+            im = OffsetImage(plt.imread(f"./images/{zi}.png"), zoom=30 / ax.figure.dpi)
             im.image.axes = ax
 
             ab = AnnotationBbox(im, (xi, yi), frameon=False, pad=0.0,)
