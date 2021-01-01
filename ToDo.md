@@ -1,3 +1,4 @@
 - Make lat lon coordinates flexible in client and also display them in app.
 - Refactor plotting function
 - Rewrite reading of images as config file
+- use icons coming from API
