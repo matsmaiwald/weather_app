@@ -22,7 +22,7 @@ def _get_response_dict(url: str) -> dict:
 
     response_get = requests.get(url).text
     response_dict = json.loads(response_get)
-    # print(f"Received as response: {response_get}")
+
     return response_dict
 
 
