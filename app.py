@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.dates as mdates
 import pandas as pd
+import json
 
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
@@ -24,10 +25,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
     Output("forecast_graph", "src"), [Input("interval-component", "n_intervals")]
 )
 def run_app(n):
+
+    with open("config.json") as f:
+        config = json.load(f)
     plt.close("all")
-    df = get_weather_data()
-    plot_graph_plus_symbols(
-        x=df["timestamp"], y=df["temp"], symbol_keys=df["icon_code"],
+    df = get_weather_data(lat=config["lat"], lon=config["lon"])
+    plot_graph_plus_icons(
+        x=df["timestamp"], y=df["temp"], icon_codes=df["icon_code"],
     )
     buf = io.BytesIO()  # in-memory files
     plt.savefig(buf, format="png")  # save to the above file object
@@ -36,30 +40,37 @@ def run_app(n):
     return "data:image/png;base64,{}".format(data)
 
 
-def plot_graph_plus_symbols(
-    x: pd.Series, y: pd.Series, symbol_keys: pd.Series,
+def plot_graph_plus_icons(
+    x: pd.Series, y: pd.Series, icon_codes: pd.Series,
 ):
-    fig, ax = plt.subplots(figsize=(12, 7))
-    # Plot temperature
-    ax.plot(x, y, linewidth=5)
-    ax.set_facecolor("lightblue")
+    def load_icon(icon_code: str):
+        return plt.imread(f"./images/{icon_code}.png")
 
-    # Plot symbol
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
-
-    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
-
-    for xi, yi, zi in zip(x, y, symbol_keys):
+    def plot_icons(icon_code: str, x_cord: float, y_cord: float, ax):
         try:
-            im = OffsetImage(plt.imread(f"./images/{zi}.png"), zoom=30 / ax.figure.dpi)
+            im = OffsetImage(load_icon(icon_code=icon_code), zoom=29 / ax.figure.dpi)
             im.image.axes = ax
 
-            ab = AnnotationBbox(im, (xi, yi), frameon=False, pad=0.0,)
+            ab = AnnotationBbox(im, (x_cord, y_cord), frameon=False, pad=-1.0,)
 
             ax.add_artist(ab)
         except KeyError as e:
-            print(f"No image found for weather: {e}")
+            print(f"No image found for icon code: {e}")
+
+    # Set up graph
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    ax.set_facecolor("lightblue")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
+
+    # Plot temperature
+    ax.plot(x, y, linewidth=5)
+
+    # Plot icons
+    for xi, yi, zi in zip(x, y, icon_codes):
+        plot_icons(icon_code=zi, x_cord=xi, y_cord=yi, ax=ax)
 
     return fig
 

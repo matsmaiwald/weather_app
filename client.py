@@ -1,8 +1,6 @@
 import requests
 import json
 import pandas as pd
-import io
-import urllib.request
 
 import yaml
 
@@ -66,16 +64,15 @@ def _download_icon_from_code(icon_code: str):
     )
 
 
-def get_weather_data() -> pd.DataFrame:
+def get_weather_data(lat: float, lon: float) -> pd.DataFrame:
 
     api_key = _get_api_key("api_key.yaml")
-    url = f"https://api.openweathermap.org/data/2.5/onecall?lat=52.52437&lon=13.41053&&appid={api_key}&units=metric"
+    url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&&appid={api_key}&units=metric"
     weather_data_raw = _get_response_dict(url=url)
     df = _process_weather_data(weather_data=weather_data_raw)
     return df
 
 
 if __name__ == "__main__":
-    # df = get_weather_data()
-    # print(df)
+    # test client
     _download_icon_from_code(icon_code="10d")
