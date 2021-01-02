@@ -7,6 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import matplotlib.figure
 import numpy as np
 import pandas as pd
 from dash.dependencies import Input, Output
@@ -23,9 +24,11 @@ plt.rcParams.update(font_options)
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
-def plot_graph_plus_icons(
+def plot_temperature_graph_plus_icons(
     timestamps: pd.Series, temperatures: pd.Series, icon_codes: pd.Series,
-):
+) -> matplotlib.figure:
+    """Create the plot of temperatures and weather icons."""
+
     def load_icon(icon_code: str) -> np.array:
         """Load the image data associated with a specific icon code."""
         return plt.imread(f"./images/{icon_code}.png")
@@ -48,7 +51,7 @@ def plot_graph_plus_icons(
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
 
     # Plot temperature over time
-    ax.plot(x=timestamps, y=temperatures, linewidth=5)
+    ax.plot(timestamps, temperatures, linewidth=5)
 
     # Plot icons
     for icon_code, timestamp, temperature in zip(icon_codes, timestamps, temperatures):
@@ -74,14 +77,14 @@ app.layout = html.Div(
 @app.callback(
     Output("forecast_graph", "src"), [Input("interval-component", "n_intervals")]
 )
-def run_app(n):
-
+def run_app(n: float):
+    """Wrapper function to run the app."""
     with open("config.json") as f:
         config = json.load(f)
     plt.close("all")
     df = get_weather_data(lat=config["lat"], lon=config["lon"])
-    plot_graph_plus_icons(
-        x=df["timestamp"], y=df["temp"], icon_codes=df["icon_code"],
+    plot_temperature_graph_plus_icons(
+        timestamps=df["timestamp"], temperatures=df["temp"], icon_codes=df["icon_code"],
     )
     buf = io.BytesIO()  # in-memory files
     plt.savefig(buf, format="png")  # save to the above file object
