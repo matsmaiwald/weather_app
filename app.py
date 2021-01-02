@@ -1,16 +1,18 @@
-import dash
-import io
 import base64
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Output, Input
-from client import get_weather_data
-import matplotlib.pyplot as plt
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-import matplotlib.dates as mdates
-import pandas as pd
+import io
 import json
 
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from dash.dependencies import Input, Output
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+
+from client import get_weather_data
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
@@ -19,6 +21,54 @@ font_options = {"font.size": 16}
 plt.rcParams.update(font_options)
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+
+def plot_graph_plus_icons(
+    timestamps: pd.Series, temperatures: pd.Series, icon_codes: pd.Series,
+):
+    def load_icon(icon_code: str) -> np.array:
+        """Load the image data associated with a specific icon code."""
+        return plt.imread(f"./images/{icon_code}.png")
+
+    def plot_icon(icon: np.array, x_cord: float, y_cord: float, ax: plt.axis):
+        """Plot icon at a specified location."""
+        im = OffsetImage(icon, zoom=29 / ax.figure.dpi)
+        im.image.axes = ax
+
+        ab = AnnotationBbox(im, (x_cord, y_cord), frameon=False, pad=-1.0,)
+
+        ax.add_artist(ab)
+
+    # Set up graph
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    ax.set_facecolor("lightblue")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
+
+    # Plot temperature over time
+    ax.plot(x=timestamps, y=temperatures, linewidth=5)
+
+    # Plot icons
+    for icon_code, timestamp, temperature in zip(icon_codes, timestamps, temperatures):
+        try:
+            icon = load_icon(icon_code=icon_code)
+            plot_icon(icon=icon, x_cord=timestamp, y_cord=temperature, ax=ax)
+        except KeyError as e:
+            print(f"No image found for icon code: {e}")
+
+    return fig
+
+
+app.layout = html.Div(
+    children=[
+        html.H1(children="Weather Forecast"),
+        html.Div(children="""Hourly temperature and weather forecast."""),
+        html.Img(id="forecast_graph", style={"height": "80%", "width": "80%"}),
+        dcc.Interval(id="interval-component", interval=0.5 * 60 * 1000, n_intervals=0),
+    ]
+)
 
 
 @app.callback(
@@ -39,50 +89,6 @@ def run_app(n):
     plt.close()
     return "data:image/png;base64,{}".format(data)
 
-
-def plot_graph_plus_icons(
-    x: pd.Series, y: pd.Series, icon_codes: pd.Series,
-):
-    def load_icon(icon_code: str):
-        return plt.imread(f"./images/{icon_code}.png")
-
-    def plot_icons(icon_code: str, x_cord: float, y_cord: float, ax):
-        try:
-            im = OffsetImage(load_icon(icon_code=icon_code), zoom=29 / ax.figure.dpi)
-            im.image.axes = ax
-
-            ab = AnnotationBbox(im, (x_cord, y_cord), frameon=False, pad=-1.0,)
-
-            ax.add_artist(ab)
-        except KeyError as e:
-            print(f"No image found for icon code: {e}")
-
-    # Set up graph
-    fig, ax = plt.subplots(figsize=(12, 7))
-
-    ax.set_facecolor("lightblue")
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%a\n%H:%M"))
-    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=4))
-
-    # Plot temperature
-    ax.plot(x, y, linewidth=5)
-
-    # Plot icons
-    for xi, yi, zi in zip(x, y, icon_codes):
-        plot_icons(icon_code=zi, x_cord=xi, y_cord=yi, ax=ax)
-
-    return fig
-
-
-app.layout = html.Div(
-    children=[
-        html.H1(children="Weather Forecast"),
-        html.Div(children="""Hourly temperature and weather forecast."""),
-        html.Img(id="forecast_graph", style={"height": "80%", "width": "80%"}),
-        dcc.Interval(id="interval-component", interval=0.5 * 60 * 1000, n_intervals=0),
-    ]
-)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
