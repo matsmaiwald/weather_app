@@ -13,7 +13,7 @@ import pandas as pd
 from dash.dependencies import Input, Output
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
-from client import get_weather_data
+from client import get_weather_forecast_data
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
@@ -82,7 +82,7 @@ def run_app(n: float):
     with open("config.json") as f:
         config = json.load(f)
     plt.close("all")
-    df = get_weather_data(lat=config["lat"], lon=config["lon"])
+    df = get_weather_forecast_data(lat=config["lat"], lon=config["lon"])
     plot_temperature_graph_plus_icons(
         timestamps=df["timestamp"], temperatures=df["temp"], icon_codes=df["icon_code"],
     )

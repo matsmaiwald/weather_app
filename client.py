@@ -6,7 +6,7 @@ import yaml
 
 
 def _get_api_key(file_path: str) -> str:
-
+    """Load key from yaml file."""
     with open(file_path, "r") as stream:
         try:
             api_key = yaml.safe_load(stream)["api_key"]
@@ -16,9 +16,7 @@ def _get_api_key(file_path: str) -> str:
     return api_key
 
 
-def _get_response_dict(url: str) -> dict:
-
-    print(f"Sending a get request to the following url: {url}")
+def _get_request_response_dict(url: str) -> dict:
 
     response_get = requests.get(url).text
     response_dict = json.loads(response_get)
@@ -27,7 +25,7 @@ def _get_response_dict(url: str) -> dict:
 
 
 def _process_weather_data(weather_data: dict) -> pd.DataFrame:
-
+    """Turn response dict into clean dataframe."""
     fcs = dict()
     fcs["hourly"] = dict()
     timestamps = []
@@ -64,11 +62,11 @@ def _download_icon_from_code(icon_code: str):
     )
 
 
-def get_weather_data(lat: float, lon: float) -> pd.DataFrame:
-
+def get_weather_forecast_data(lat: float, lon: float) -> pd.DataFrame:
+    """Retrieve hourly forecast for specified location."""
     api_key = _get_api_key("api_key.yaml")
     url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&&appid={api_key}&units=metric"
-    weather_data_raw = _get_response_dict(url=url)
+    weather_data_raw = _get_request_response_dict(url=url)
     df = _process_weather_data(weather_data=weather_data_raw)
     return df
 
